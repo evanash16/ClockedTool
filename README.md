@@ -35,3 +35,13 @@
   </ul>
 </li>
 </ul>
+
+<h3>1.0.2</h3>
+<ul>
+<li>Fixed bug: Clocked Tool started clocked in, not clocked out
+  <ul>
+  <li>Fixed by changing the orientation of the dial when you start it</li>
+  <li>Add a time to history.log (in the folder containing the .jar file) to offset if the dial is offset</li>
+  </ul>
+</li>
+</ul>

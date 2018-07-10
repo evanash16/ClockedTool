@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 
 public class DialPanel extends JPanel {
 
-    private double angle, delAngle = 0.1, destination;
+    private double angle = Math.PI, delAngle = 0.1, destination = Math.PI;
     private int radius;
     private String upString = "IN", downString = "OUT", text = "clocked...";
     private CornerButton viewHistory, minimize;
