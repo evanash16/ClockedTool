@@ -16,7 +16,6 @@
 </ul>
 
 <h2>Features</h2>
-<div>
 <h3>1.0</h3>
 <ul>
 <li>"One Week Ago" - Provides a clock time (in red) that you should aim to clock out by to achieve the same number of hours as the same day in the prior week
@@ -25,10 +24,8 @@
   <li>The time will <b>not</b> show up if you didn't work the same day in the previous week</li>
   </ul>
 </li>
-<\ul>
-</div>
+</ul>
 
-<div>
 <h3>1.0.1</h3>
 <ul>
 <li>"Full Time" - Overrides "One Week Ago" with a clock time (in red) that you should aim to clock out by to achieve 8 hours
@@ -38,4 +35,3 @@
   </ul>
 </li>
 </ul>
-</div>
