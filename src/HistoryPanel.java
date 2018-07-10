@@ -20,7 +20,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     private String date;
     private int buttonWidth;
     private boolean viewingHistory;
-    private Checkbox verbose;
+    private Checkbox verbose, fullTime;
     private Button left, right, back;
 
     public HistoryPanel(Container parent, UIComponentListener ul) {
@@ -30,6 +30,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         buttonWidth = getWidth() / 10;
 
         verbose = new Checkbox(getWidth() - getWidth() / 50 - getWidth() / 20, getHeight() / 50, getWidth() / 20, getHeight() / 20, "Verbose", this);
+        fullTime = new Checkbox(getWidth() - getWidth() / 50 - getWidth() / 20, verbose.getY() + verbose.getHeight() + getHeight() / 50, getWidth() / 20, getHeight() / 20, "Full Time", this);
         left = new Button(buttonWidth, getHeight() - buttonWidth, ((getWidth() + buttonWidth) / 2) - buttonWidth, buttonWidth, "<", this);
         right = new Button((getWidth() + buttonWidth) / 2, getHeight() - buttonWidth, (getWidth() + buttonWidth) / 2 - buttonWidth, buttonWidth, ">", this);
         back = new Button(0, 0, buttonWidth, getHeight(), "Back", "back", Button.BOTTOM_TO_TOP, ul);
@@ -79,7 +80,14 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 }
                 g2.drawString(todayString, buttonWidth, (i + 3) * g2.getFont().getSize());
             }
-            if(date.equals(getDate()) && loggedTime(previousWeek()) > 0 && (today.size() - 1) % 2 == 0) {
+            if(fullTime.isChecked() && (today.size() - 1) % 2 == 0) {
+                double additionalTime = 8.0 - loggedTime();
+                g2.setColor(Color.RED);
+                if (additionalTime < 0)
+                    g2.setColor(Color.GREEN);
+                String anticipatedTime = getTime(additionalTime);
+                g2.drawString(anticipatedTime, buttonWidth, (today.size() + 3) * g2.getFont().getSize());
+            } else if(date.equals(getDate()) && loggedTime(previousWeek()) > 0 && (today.size() - 1) % 2 == 0) {
                 double additionalTime = loggedTime(previousWeek()) - loggedTime();
                 g2.setColor(Color.RED);
                 if (additionalTime < 0)
@@ -97,6 +105,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         left.draw(g2);
         right.draw(g2);
         verbose.draw(g2);
+        fullTime.draw(g2);
 
         g.drawImage(buffer, 0, 0, null);
     }
@@ -209,6 +218,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         left.click(e.getPoint());
         right.click(e.getPoint());
         verbose.click(e.getPoint());
+        fullTime.click(e.getPoint());
         back.click(e.getPoint());
     }
 
