@@ -79,7 +79,6 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
         if (dial.isVisible()) {
             dial.click(e);
             if (dial.clicked(e)) {
-                dial.flip();
                 history.log();
                 if (!dial.isDown()) {
                     scheduler.schedule(10000);

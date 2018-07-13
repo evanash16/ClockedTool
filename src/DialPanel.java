@@ -1,4 +1,6 @@
 import ui.CornerButton;
+import ui.Checkbox;
+import ui.UIComponent;
 import ui.UIComponentListener;
 
 import javax.swing.*;
@@ -13,12 +15,14 @@ public class DialPanel extends JPanel {
     private int radius;
     private String upString = "IN", downString = "OUT", text = "clocked...";
     private CornerButton viewHistory, minimize;
+    private Checkbox freeSpin;
 
     public DialPanel(Container parent, UIComponentListener ul) {
         setSize(parent.getSize());
         radius = Math.min(getWidth(), getHeight()) / 2;
         viewHistory = new CornerButton(radius / 16, radius / 16, radius / 4, radius / 4, CornerButton.NORTH_WEST, "...", "history", ul);
         minimize = new CornerButton(getWidth() - radius / 16, getHeight() - radius / 16, radius / 4, radius / 4, CornerButton.SOUTH_EAST, "", "minimize", ul);
+        freeSpin = new Checkbox(radius / 2 - radius / 8,  getHeight() - radius / 15 - radius / 32, radius / 15, radius / 15, "Free Spin!", ul);
     }
 
     public void paint(Graphics g) {
@@ -30,6 +34,7 @@ public class DialPanel extends JPanel {
 
         viewHistory.draw(g2);
         minimize.draw(g2);
+        freeSpin.draw(g2);
 
         Graphics2D g2D = (Graphics2D) g2;
         AffineTransform transform = g2D.getTransform();
@@ -89,15 +94,25 @@ public class DialPanel extends JPanel {
     }
 
     public boolean isDown() {
-        return angle % (2 * Math.PI) >= Math.PI;
+        return !isFreeSpinning() && angle % (2 * Math.PI) >= Math.PI;
+    }
+    public boolean isFreeSpinning() {
+        return freeSpin.isChecked();
     }
 
     public void click(MouseEvent e) {
         minimize.click(e.getPoint());
         viewHistory.click(e.getPoint());
+        freeSpin.click(e.getPoint());
     }
 
     public boolean clicked(MouseEvent e) {
-        return isVisible() && Math.sqrt(Math.pow((getWidth() / 2) - e.getX(), 2) + Math.pow((getHeight() / 2) - e.getY(), 2)) <= radius;
+        if(isVisible() && Math.sqrt(Math.pow((getWidth() / 2) - e.getX(), 2) + Math.pow((getHeight() / 2) - e.getY(), 2)) <= radius) {
+            flip();
+            if(!isFreeSpinning()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

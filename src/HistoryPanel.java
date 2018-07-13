@@ -1,7 +1,6 @@
+import ui.*;
 import ui.Button;
 import ui.Checkbox;
-import ui.UIComponent;
-import ui.UIComponentListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class HistoryPanel extends JPanel implements UIComponentListener {
 
-    private Map<String, ArrayList<String>> log;
+    private Map<String, ArrayList<Punch>> log;
     private String date;
     private int buttonWidth;
     private boolean viewingHistory;
@@ -46,9 +45,9 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 if(!log.containsKey(date)) {
                     log.put(date, new ArrayList<>());
                 }
-                ArrayList<String> timestamps = log.get(date);
+                ArrayList<Punch> timestamps = log.get(date);
                 for(int i = 1; i < components.length; i++) {
-                    timestamps.add(components[i]);
+                    timestamps.add(new Punch(components[i], back.getX() + back.getWidth(), (i + 1) * getHeight() / 12, getHeight() / 12, this));
                 }
                 log.put(date, timestamps);
             }
@@ -70,15 +69,14 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
 
         if(log.containsKey(date)) {
             g2.setColor(Color.WHITE);
-            g2.drawString(date, buttonWidth, g2.getFont().getSize());
-            ArrayList<String> today = log.get(date);
-            String todayString;
+            g2.drawString(date, back.getWidth(), g2.getFont().getSize());
+            ArrayList<Punch> today = log.get(date);
             for(int i = 0; i < today.size(); i++) {
-                todayString = today.get(i);
                 if(verbose.isChecked() && i - 1 >= 0 && (i - 1) % 2 == 0) {
-                    todayString += String.format(" (+%.1f hours)", timeDifference(today.get(i - 1), today.get(i)));
+                    final String todayString = String.format(" (+%.1f hours)", timeDifference(today.get(i - 1).getPunchTime(), today.get(i).getPunchTime()));
+                    g2.drawString(todayString, today.get(i).getX() + today.get(i).getWidth() + 5, (i + 2) * g2.getFont().getSize());
                 }
-                g2.drawString(todayString, buttonWidth, (i + 3) * g2.getFont().getSize());
+                today.get(i).draw(g2);
             }
             if(fullTime.isChecked() && (today.size() - 1) % 2 == 0) {
                 double additionalTime = 8.0 - loggedTime();
@@ -86,14 +84,14 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 if (additionalTime < 0)
                     g2.setColor(Color.GREEN);
                 String anticipatedTime = getTime(additionalTime);
-                g2.drawString(anticipatedTime, buttonWidth, (today.size() + 3) * g2.getFont().getSize());
+                g2.drawString(anticipatedTime, back.getWidth(), (today.size() + 3) * g2.getFont().getSize());
             } else if(date.equals(getDate()) && loggedTime(previousWeek()) > 0 && (today.size() - 1) % 2 == 0) {
                 double additionalTime = loggedTime(previousWeek()) - loggedTime();
                 g2.setColor(Color.RED);
                 if (additionalTime < 0)
                         g2.setColor(Color.GREEN);
                 String anticipatedTime = getTime(additionalTime);
-                g2.drawString(anticipatedTime, buttonWidth, (today.size() + 3) * g2.getFont().getSize());
+                g2.drawString(anticipatedTime, back.getWidth(), (today.size() + 3) * g2.getFont().getSize());
             }
         }
 
@@ -161,12 +159,12 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     public double loggedTime(String date) {
         double hours = 0;
         if(log.containsKey(date)) {
-            ArrayList<String> timestamps = log.get(date);
+            ArrayList<Punch> timestamps = log.get(date);
             for(int i = 0; i < timestamps.size() - ((timestamps.size() % 2) + 1); i += 2) {
-                hours += timeDifference(timestamps.get(i), timestamps.get(i + 1));
+                hours += timeDifference(timestamps.get(i).getPunchTime(), timestamps.get(i + 1).getPunchTime());
             }
             if(timestamps.size() % 2 != 0) { //haven't clocked out yet
-                hours += timeDifference(timestamps.get(timestamps.size() - 1), getTime());
+                hours += timeDifference(timestamps.get(timestamps.size() - 1).getPunchTime(), getTime());
             }
         }
         return hours;
@@ -187,9 +185,9 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         if(!log.containsKey(date)) {
             log.put(date, new ArrayList<>());
         }
-        ArrayList<String> timestamps = log.get(date);
+        ArrayList<Punch> timestamps = log.get(date);
         String timestamp = getTime();
-        timestamps.add(timestamp);
+        timestamps.add(new Punch(timestamp, back.getX() + back.getWidth(), (timestamps.size() + 2) * getHeight() / 12, getHeight() / 12, this));
         log.put(date, timestamps);
         writeLog();
     }
@@ -199,9 +197,9 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
             PrintStream out = new PrintStream(new File("history.log"));
             for(String date : log.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList())) {
                 out.print(date + ",");
-                ArrayList<String> today = log.get(date);
+                ArrayList<Punch> today = log.get(date);
                 for(int i = 0; i < today.size(); i++) {
-                    out.print(today.get(i));
+                    out.print(today.get(i).getPunchTime());
                     if(i < today.size() - 1) {
                         out.print(",");
                     } else{
@@ -214,12 +212,35 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         }
     }
 
+    public void removeLog(Punch removedPunch) {
+        ArrayList<Punch> today = log.get(date);
+        int indexOfP = today.indexOf(removedPunch);
+        today.remove(removedPunch);
+        for (Punch p : today.subList(indexOfP, today.size())) {
+            p.setY(p.getY() - p.getHeight());
+        }
+        if(today.isEmpty()) {
+            log.remove(date);
+            date = getDate();
+        }
+        writeLog();
+    }
+
     public void click(MouseEvent e) {
         left.click(e.getPoint());
         right.click(e.getPoint());
         verbose.click(e.getPoint());
         fullTime.click(e.getPoint());
         back.click(e.getPoint());
+        if(log.containsKey(date)) {
+            for(Punch p : log.get(date)) {
+                p.click(e.getPoint());
+                if (p.isDeleted()) {
+                    removeLog(p);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
