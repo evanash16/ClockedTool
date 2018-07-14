@@ -4,8 +4,7 @@ import ui.UIComponentListener;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -51,27 +50,22 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
         history.setVisible(false);
         this.add(history);
 
-        scheduler = new Scheduler(this);
+        scheduler = new Scheduler();
 
-        updateTimer = new Timer(10, e -> update());
-        updateTimer.start();
+        updateTimer = new Timer(1000, e -> update());
 
         setVisible(true);
     }
 
-    public void paint(Graphics g) {
-        dial.repaint();
-        history.repaint();
-    }
-
     public void update() {
-        repaint();
-        scheduler.decrement(updateTimer.getDelay());
-        if (scheduler.isAlarming()) {
+        scheduler.decrement(1);
+        if(scheduler.isEmpty())
+            if(updateTimer.isRunning())
+                updateTimer.stop();
+        if(scheduler.isAlarming()) {
             setState(NORMAL);
             setLocation((tk.getScreenSize().width - getWidth()) / 2, (tk.getScreenSize().height - getHeight()) / 2);
         }
-        history.update();
     }
 
     @Override
@@ -81,8 +75,12 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
             if (dial.clicked(e)) {
                 history.log();
                 if (!dial.isDown()) {
-                    scheduler.schedule(10000);
+                    if(!updateTimer.isRunning())
+                        updateTimer.start();
+                    scheduler.schedule(10);
                 } else {
+                    if(updateTimer.isRunning())
+                        updateTimer.stop();
                     scheduler.clearEvents();
                     setLocation(tk.getScreenSize().width - getWidth(), tk.getScreenSize().height - getHeight());
                 }
@@ -90,6 +88,25 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
         } else if(history.isVisible()) {
             history.click(e);
         }
+    }
+
+    @Override
+    public void onUIComponentEvent(UIComponent ui) {
+        if(ui.getId().equals("back")) {
+            history.setVisible(false);
+            dial.setVisible(true);
+        } else if(ui.getId().equals("history")) {
+            history.setVisible(true);
+            dial.setVisible(false);
+            history.update();
+        }  else if(ui.getId().equals("minimize")) {
+            if(scheduler.isAlarming()) {
+                setLocation((tk.getScreenSize().width - getWidth()) / 2, (tk.getScreenSize().height - getHeight()) / 2);
+            } else {
+                setLocation(tk.getScreenSize().width - getWidth(), tk.getScreenSize().height - getHeight());
+            }
+        }
+        repaint();
     }
 
     @Override
@@ -108,18 +125,5 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
     @Override
     public void mouseExited(MouseEvent e) {
 
-    }
-
-    @Override
-    public void onUIComponentEvent(UIComponent ui) {
-        if(ui.getId().equals("back")) {
-            history.setVisible(false);
-            dial.setVisible(true);
-        } else if(ui.getId().equals("history")) {
-            history.setVisible(true);
-            dial.setVisible(false);
-        }  else if(ui.getId().equals("minimize")) {
-            setLocation(tk.getScreenSize().width - getWidth(), tk.getScreenSize().height - getHeight());
-        }
     }
 }

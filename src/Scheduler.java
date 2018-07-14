@@ -6,23 +6,29 @@ import java.util.stream.Collectors;
 public class Scheduler extends JPanel {
 
     private ArrayList<Long> events;
+    private boolean alarming;
 
-    public Scheduler(Container parent) {
+    public Scheduler() {
         events = new ArrayList<>();
     }
 
     public void schedule(long delay) {events.add(delay);}
     public void decrement(long value) {
-        events = (ArrayList<Long>) events.stream().map(v -> v - value).collect(Collectors.toList());
-    }
-    public boolean isAlarming() {
-        boolean alarming = false;
-        for(int i = events.size() - 1; i >= 0; i--) {
-            if(events.get(i) < 0) {
+        for(int i = 0; i < events.size(); i++) {
+            Long eventTime = events.get(i);
+            events.set(i, eventTime - value);
+            if(eventTime <= 0) {
                 alarming = true;
+                events.remove(i);
+                i--;
             }
         }
-        return alarming;
     }
-    public void clearEvents() {events = new ArrayList<>();}
+    public boolean isAlarming() {return this.alarming;}
+
+    public boolean isEmpty() {return events.isEmpty();}
+    public void clearEvents() {
+        events = new ArrayList<>();
+        alarming = false;
+    }
 }

@@ -74,7 +74,8 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
             for(int i = 0; i < today.size(); i++) {
                 if(verbose.isChecked() && i - 1 >= 0 && (i - 1) % 2 == 0) {
                     final String todayString = String.format(" (+%.1f hours)", timeDifference(today.get(i - 1).getPunchTime(), today.get(i).getPunchTime()));
-                    g2.drawString(todayString, today.get(i).getX() + today.get(i).getWidth() + 5, (i + 2) * g2.getFont().getSize());
+                    g2.setColor(Color.WHITE);
+                    g2.drawString(todayString, today.get(i).getX() + Math.max(today.get(i - 1).getWidth(), today.get(i).getWidth()) + 5, (today.get(i - 1).getY() + today.get(i).getY()) / 2 + 3 * today.get(i).getHeight() / 4);
                 }
                 today.get(i).draw(g2);
             }
@@ -241,6 +242,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 }
             }
         }
+        repaint();
     }
 
     @Override

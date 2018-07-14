@@ -63,3 +63,19 @@
   </ul>
 </li>
 </ul>
+
+<h3>1.0.3</h3>
+<ul>
+<li>Fixed bug: CPU was constantly being used due to unnecessary graphics refreshes
+  <ul>
+  <li>Graphics updates are driven by click events only</li>
+  <li>Animations (like the Dial) start an animation timer and stop it when the animation finishes</li>
+  </ul>
+</li>
+<li>Fixed bug: difference between punches in Verbose mode turned black upon toggling deletion of punch</li>
+<li>Made "Free Spin!" checkbox a bit bigger on the main page
+  <ul>
+  <li>Removed "Free" part and increased the checkbox size</li>
+  </ul>
+</li>
+</ul>

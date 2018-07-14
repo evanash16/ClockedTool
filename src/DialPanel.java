@@ -5,6 +5,8 @@ import ui.UIComponentListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -17,12 +19,17 @@ public class DialPanel extends JPanel {
     private CornerButton viewHistory, minimize;
     private Checkbox freeSpin;
 
+    private Timer updateTimer;
+
     public DialPanel(Container parent, UIComponentListener ul) {
         setSize(parent.getSize());
+
         radius = Math.min(getWidth(), getHeight()) / 2;
         viewHistory = new CornerButton(radius / 16, radius / 16, radius / 4, radius / 4, CornerButton.NORTH_WEST, "...", "history", ul);
         minimize = new CornerButton(getWidth() - radius / 16, getHeight() - radius / 16, radius / 4, radius / 4, CornerButton.SOUTH_EAST, "", "minimize", ul);
-        freeSpin = new Checkbox(radius / 2 - radius / 8,  getHeight() - radius / 15 - radius / 32, radius / 15, radius / 15, "Free Spin!", ul);
+        freeSpin = new Checkbox(radius / 2 - radius / 5,  getHeight() - radius / 10 - radius / 32, radius / 10, radius / 10, "Spin!", ul);
+
+        updateTimer = new Timer(10,  e -> repaint());
     }
 
     public void paint(Graphics g) {
@@ -83,14 +90,19 @@ public class DialPanel extends JPanel {
 
     public void moveTo(double destination) {
         if(Math.abs(destination - angle) > delAngle) {
+            if(!updateTimer.isRunning())
+                updateTimer.start();
             angle += delAngle;
         } else{
+            if(updateTimer.isRunning())
+                updateTimer.stop();
             angle = destination;
         }
     }
 
     public void flip() {
         destination = destination + Math.PI;
+        moveTo(destination);
     }
 
     public boolean isDown() {
