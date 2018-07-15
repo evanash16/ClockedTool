@@ -64,7 +64,7 @@
 </li>
 </ul>
 
-<h3>1.0.3</h3>
+<h3>1.0.4</h3>
 <ul>
 <li>Fixed bug: CPU was constantly being used due to unnecessary graphics refreshes
   <ul>
