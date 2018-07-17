@@ -79,3 +79,13 @@
   </ul>
 </li>
 </ul>
+
+<h3>1.0.5</h3>
+<ul>
+<li>Fixed bug: history page wasn't refreshing information
+  <ul>
+  <li>History page now has an update timer that refreshes the information every 30 seconds</li>
+  <li>Data is still refreshed every time you enter the history page or spin the dial</li>
+  </ul>
+</li>
+</ul>

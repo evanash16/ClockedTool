@@ -1,8 +1,9 @@
-import ui.*;
 import ui.Button;
 import ui.Checkbox;
+import ui.*;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -17,10 +18,14 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
 
     private Map<String, ArrayList<Punch>> log;
     private String date;
-    private int buttonWidth;
-    private boolean viewingHistory;
+    private int buttonWidth, updateTicks;
+    private static final int UPDATE_TIME = 2 /*in seconds*/, FRAMERATE = 30 /*in frames per second*/;
+    private static final String UPDATE_STRING = "Updated: ";
+
+    private boolean viewingHistory, updating;
     private Checkbox verbose, fullTime;
     private Button left, right, back;
+    private Timer animationTimer;
 
     public HistoryPanel(Container parent, UIComponentListener ul) {
         log = new HashMap<>();
@@ -33,6 +38,10 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         left = new Button(buttonWidth, getHeight() - buttonWidth, ((getWidth() + buttonWidth) / 2) - buttonWidth, buttonWidth, "<", this);
         right = new Button((getWidth() + buttonWidth) / 2, getHeight() - buttonWidth, (getWidth() + buttonWidth) / 2 - buttonWidth, buttonWidth, ">", this);
         back = new Button(0, 0, buttonWidth, getHeight(), "Back", "back", Button.BOTTOM_TO_TOP, ul);
+
+        new Timer(30000, (e) -> update()).start(); //update work time estimate every thirty seconds
+        animationTimer = new Timer(1000 / FRAMERATE, (e) -> update()); //fades out "Updated text"
+
         try{
             File historyLog = new File("history.log");
             historyLog.createNewFile();
@@ -106,6 +115,14 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         verbose.draw(g2);
         fullTime.draw(g2);
 
+        if(updating) {
+            g2.setColor(new Color(255, 255, 255, (int) (255 * (1 - (double) updateTicks / (double) (FRAMERATE * UPDATE_TIME)))));
+            g2.setFont(new Font(null, Font.PLAIN, getHeight() / 20));
+
+            int stringWidth = g2.getFontMetrics().stringWidth(UPDATE_STRING + getTime());
+            g2.drawString(UPDATE_STRING + getTime(), getWidth() - stringWidth - 5, right.getY() - 5);
+        }
+
         g.drawImage(buffer, 0, 0, null);
     }
 
@@ -146,9 +163,20 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     }
 
     public void update() {
+        if(!updating) {
+            updating = true;
+            animationTimer.start();
+        } else if(updateTicks == UPDATE_TIME * FRAMERATE) {
+            updateTicks = 0;
+            updating = false;
+            animationTimer.stop();
+        } else {
+            updateTicks++;
+        }
         if(!viewingHistory) {
             date = getDate();
         }
+        repaint();
     }
 
     public String previousWeek() {

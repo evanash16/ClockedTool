@@ -4,8 +4,8 @@ import ui.UIComponentListener;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 
 public class ClockedTool extends JFrame implements MouseListener, UIComponentListener {
@@ -74,6 +74,7 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
             dial.click(e);
             if (dial.clicked(e)) {
                 history.log();
+                history.update();
                 if (!dial.isDown()) {
                     if(!updateTimer.isRunning())
                         updateTimer.start();
