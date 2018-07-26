@@ -89,3 +89,13 @@
   </ul>
 </li>
 </ul>
+
+<h3>1.0.6</h3>
+<ul>
+<li>Week Hours - You can now see how many hours you've worked in the week on the History page
+  <ul>
+  <li>The History page now has a checkbox which enables viewing of the hours you've worked in the week</li>
+  <li>The week <b>starts</b> on Sunday and <b>ends</b> on Saturday</li>
+  </ul>
+</li>
+</ul>

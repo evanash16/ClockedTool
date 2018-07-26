@@ -23,7 +23,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     private static final String UPDATE_STRING = "Updated: ";
 
     private boolean viewingHistory, updating;
-    private Checkbox verbose, fullTime;
+    private Checkbox verbose, fullTime, weekHours;
     private Button left, right, back;
     private Timer animationTimer;
 
@@ -35,6 +35,8 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
 
         verbose = new Checkbox(getWidth() - getWidth() / 50 - getWidth() / 20, getHeight() / 50, getWidth() / 20, getHeight() / 20, "Verbose", this);
         fullTime = new Checkbox(getWidth() - getWidth() / 50 - getWidth() / 20, verbose.getY() + verbose.getHeight() + getHeight() / 50, getWidth() / 20, getHeight() / 20, "Full Time", this);
+        weekHours = new Checkbox(getWidth() - getWidth() / 50 - getWidth() / 20, fullTime.getY() + fullTime.getHeight() + getHeight() / 50, getWidth() / 20, getHeight() / 20, "Week Hours", this);
+
         left = new Button(buttonWidth, getHeight() - buttonWidth, ((getWidth() + buttonWidth) / 2) - buttonWidth, buttonWidth, "<", this);
         right = new Button((getWidth() + buttonWidth) / 2, getHeight() - buttonWidth, (getWidth() + buttonWidth) / 2 - buttonWidth, buttonWidth, ">", this);
         back = new Button(0, 0, buttonWidth, getHeight(), "Back", "back", Button.BOTTOM_TO_TOP, ul);
@@ -103,17 +105,27 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 String anticipatedTime = getTime(additionalTime);
                 g2.drawString(anticipatedTime, back.getWidth(), (today.size() + 3) * g2.getFont().getSize());
             }
-        }
 
-        g2.setColor(Color.WHITE);
-        String timeString = String.format("%.1f hours", loggedTime());
-        g2.drawString(timeString, back.getWidth(), left.getY() - 5);
+            if(weekHours.isChecked()) {
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font(null, Font.BOLD, getHeight() / 20));
+                String timeString = String.format("%.1f hours", loggedTime());
+                String weekString = String.format("Week: %.1f hours", weekHours(date));
+                g2.drawString(timeString, back.getWidth(), left.getY() - g2.getFont().getSize() - 5);
+                g2.drawString(weekString, back.getWidth(), left.getY() - 5);
+            } else {
+                g2.setColor(Color.WHITE);
+                String timeString = String.format("%.1f hours", loggedTime());
+                g2.drawString(timeString, back.getWidth(), left.getY() - 5);
+            }
+        }
 
         back.draw(g2);
         left.draw(g2);
         right.draw(g2);
         verbose.draw(g2);
         fullTime.draw(g2);
+        weekHours.draw(g2);
 
         if(updating) {
             g2.setColor(new Color(255, 255, 255, (int) (255 * (1 - (double) updateTicks / (double) (FRAMERATE * UPDATE_TIME)))));
@@ -132,16 +144,20 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     }
 
     public String getDate(int direction) {
+        return getDate(date, direction);
+    }
+
+    public String getDate(String currentDate, int direction) {
         Comparator<String> dateComparator = Comparator.comparing((String k) -> k.split("/")[2]) //sort by year
-                                                      .thenComparing((String k) -> k.split("/")[0]) //sort by month
-                                                      .thenComparing((String k) -> k.split("/")[1]); //sort by day
+                .thenComparing((String k) -> k.split("/")[0]) //sort by month
+                .thenComparing((String k) -> k.split("/")[1]); //sort by day
         ArrayList<String> orderedKeys = (ArrayList<String>) log.keySet().stream().sorted(dateComparator).collect(Collectors.toList());
-        int currentIndex = orderedKeys.indexOf(date);
+        int currentIndex = orderedKeys.indexOf(currentDate);
         int nextIndex = currentIndex + (int) Math.signum(direction);
         if(nextIndex >= 0 && nextIndex <= orderedKeys.size() - 1) {
             return orderedKeys.get(nextIndex);
         }
-        return date;
+        return currentDate;
     }
 
     public String getTime(double additionalHours) {
@@ -183,6 +199,54 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         Calendar calendar = Calendar.getInstance();
         calendar.setWeekDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.WEEK_OF_YEAR) - 1 % 52, calendar.get(Calendar.DAY_OF_WEEK));
         return String.format("%02d/%02d/%02d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DATE), calendar.get(Calendar.YEAR));
+    }
+
+    public int weekOfYear(String date) {
+        Calendar calendar = Calendar.getInstance();
+        int year = Integer.parseInt(date.split("/")[2]);
+        int month = Integer.parseInt(date.split("/")[0]) - 1;
+        int day = Integer.parseInt(date.split("/")[1]);
+        calendar.set(year, month, day);
+        return calendar.get(Calendar.WEEK_OF_YEAR);
+    }
+
+    public double weekHours(String date) {
+        double hours = 0;
+        for(String weekDate : weekDates(date)) {
+            hours += loggedTime(weekDate);
+        }
+        return hours;
+    }
+
+    public ArrayList<String> weekDates(String date) {
+        ArrayList<String> dates = new ArrayList<>();
+        String currentDate = date;
+        dates.add(currentDate);
+        int weekOfYear = weekOfYear(currentDate);
+        while(weekOfYear(currentDate) == weekOfYear) {
+            String previousDate = getDate(currentDate, -1);
+            if(!currentDate.equals(previousDate) && weekOfYear(previousDate) == weekOfYear) {
+                currentDate = getDate(currentDate, -1);
+            } else {
+                break;
+            }
+            if(!dates.contains(currentDate)) {
+                dates.add(currentDate);
+            }
+        }
+        currentDate = date;
+        while(weekOfYear(currentDate) == weekOfYear) {
+            String nextDate = getDate(currentDate, 1);
+            if(!currentDate.equals(nextDate) && weekOfYear(nextDate) == weekOfYear) {
+                currentDate = getDate(currentDate, 1);
+            } else {
+                break;
+            }
+            if(!dates.contains(currentDate)) {
+                dates.add(currentDate);
+            }
+        }
+        return dates;
     }
 
     public double loggedTime(String date) {
@@ -256,11 +320,12 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     }
 
     public void click(MouseEvent e) {
+        back.click(e.getPoint());
         left.click(e.getPoint());
         right.click(e.getPoint());
         verbose.click(e.getPoint());
         fullTime.click(e.getPoint());
-        back.click(e.getPoint());
+        weekHours.click(e.getPoint());
         if(log.containsKey(date)) {
             for(Punch p : log.get(date)) {
                 p.click(e.getPoint());
