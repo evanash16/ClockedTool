@@ -99,3 +99,8 @@
   </ul>
 </li>
 </ul>
+
+<h3>1.0.7</h3>
+<ul>
+<li>Quicker history navigation - By pressing the Control key, you can navigate through your punches twice as fast</li>
+</ul>

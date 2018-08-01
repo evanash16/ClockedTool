@@ -1,3 +1,4 @@
+import input.KeyboardUtility;
 import ui.Button;
 import ui.Checkbox;
 import ui.*;
@@ -5,6 +6,7 @@ import ui.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -121,7 +123,19 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         }
 
         back.draw(g2);
+        if(KeyboardUtility.isPressed(KeyEvent.VK_CONTROL)) {
+            left.setLabel("<<");
+        } else {
+            left.setLabel("<");
+        }
         left.draw(g2);
+
+        if(KeyboardUtility.isPressed(KeyEvent.VK_CONTROL)) {
+            right.setLabel(">>");
+        } else {
+            right.setLabel(">");
+        }
+        right.draw(g2);
         right.draw(g2);
         verbose.draw(g2);
         fullTime.draw(g2);
@@ -153,11 +167,14 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 .thenComparing((String k) -> k.split("/")[1]); //sort by day
         ArrayList<String> orderedKeys = (ArrayList<String>) log.keySet().stream().sorted(dateComparator).collect(Collectors.toList());
         int currentIndex = orderedKeys.indexOf(currentDate);
-        int nextIndex = currentIndex + (int) Math.signum(direction);
+        int nextIndex = currentIndex + direction;
         if(nextIndex >= 0 && nextIndex <= orderedKeys.size() - 1) {
             return orderedKeys.get(nextIndex);
+        } else if(nextIndex < 0) {
+            return orderedKeys.get(0);
+        } else {
+            return orderedKeys.get(orderedKeys.size() - 1);
         }
-        return currentDate;
     }
 
     public String getTime(double additionalHours) {
@@ -342,10 +359,10 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     public void onUIComponentEvent(UIComponent ui) {
         if(ui.equals(left)) {
             viewingHistory = true;
-            date = getDate(-1);
+            date = getDate(KeyboardUtility.isPressed(KeyEvent.VK_CONTROL) ? -2 : -1);
         } else if(ui.equals(right)) {
             viewingHistory = true;
-            date = getDate(1);
+            date = getDate(KeyboardUtility.isPressed(KeyEvent.VK_CONTROL) ? 2 : 1);
         }
     }
 }

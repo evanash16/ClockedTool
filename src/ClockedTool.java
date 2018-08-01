@@ -1,14 +1,17 @@
+import input.KeyboardUtility;
 import ui.UIComponent;
 import ui.UIComponentListener;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 
-public class ClockedTool extends JFrame implements MouseListener, UIComponentListener {
+public class ClockedTool extends JFrame implements KeyListener, MouseListener, UIComponentListener {
 
     private static Toolkit tk = Toolkit.getDefaultToolkit();
     public static Dimension SCREENSIZE = new Dimension(tk.getScreenResolution() * 3, tk.getScreenResolution() * 3);
@@ -35,6 +38,7 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
         setAlwaysOnTop(true);
         setUndecorated(true);
         setResizable(false);
+        addKeyListener(this);
         addMouseListener(this);
         try {
             setIconImage(ImageIO.read(getClass().getResource("/images/ClockedToolIconV2.png")));
@@ -92,6 +96,22 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
     }
 
     @Override
+    public void keyPressed(KeyEvent keyEvent) {
+        if(!KeyboardUtility.isPressed(keyEvent.getKeyCode())) {
+            KeyboardUtility.keyPressed(keyEvent.getKeyCode());
+            history.repaint();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent keyEvent) {
+        if(KeyboardUtility.isPressed(keyEvent.getKeyCode())) {
+            KeyboardUtility.keyReleased(keyEvent.getKeyCode());
+            history.repaint();
+        }
+    }
+
+    @Override
     public void onUIComponentEvent(UIComponent ui) {
         if(ui.getId().equals("back")) {
             history.setVisible(false);
@@ -114,17 +134,14 @@ public class ClockedTool extends JFrame implements MouseListener, UIComponentLis
     public void mouseClicked(MouseEvent e) {}
 
     @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
+    public void mousePressed(MouseEvent e) {}
 
     @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
+    public void mouseEntered(MouseEvent e) {}
 
     @Override
-    public void mouseExited(MouseEvent e) {
+    public void mouseExited(MouseEvent e) {}
 
-    }
+    @Override
+    public void keyTyped(KeyEvent keyEvent) {}
 }
