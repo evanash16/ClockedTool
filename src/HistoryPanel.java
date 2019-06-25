@@ -47,10 +47,12 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         animationTimer = new Timer(1000 / FRAMERATE, (e) -> update()); //fades out "Updated text"
 
         try{
+            // open history.log, create if it doesn't exist
             File historyLog = new File("history.log");
             historyLog.createNewFile();
 
             Scanner scanner = new Scanner(historyLog);
+            // parse punches out of history.log, add to timestamps ArrayList
             while(scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] components = line.split(",");
@@ -64,8 +66,6 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 }
                 log.put(date, timestamps);
             }
-        } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -80,18 +80,28 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
 
         g2.setFont(new Font(null, Font.BOLD, getHeight() / 12));
 
+        // if there are log entries for the current date
         if(log.containsKey(date)) {
+
+            // draw the current date
             g2.setColor(Color.WHITE);
             g2.drawString(date, back.getWidth(), g2.getFont().getSize());
+
+            // for every punch in today's date
             ArrayList<Punch> today = log.get(date);
             for(int i = 0; i < today.size(); i++) {
+                // between every pair of punches, display the time between the punches
                 if(verbose.isChecked() && i - 1 >= 0 && (i - 1) % 2 == 0) {
-                    final String todayString = String.format(" (+%.1f hours)", timeDifference(today.get(i - 1).getPunchTime(), today.get(i).getPunchTime()));
+                    g2.setFont(new Font(null, Font.BOLD, getHeight() / 16));
+                    final String todayString = String.format(" (+%.1f)", timeDifference(today.get(i - 1).getPunchTime(), today.get(i).getPunchTime()));
                     g2.setColor(Color.WHITE);
                     g2.drawString(todayString, today.get(i).getX() + Math.max(today.get(i - 1).getWidth(), today.get(i).getWidth()) + 5, (today.get(i - 1).getY() + today.get(i).getY()) / 2 + 3 * today.get(i).getHeight() / 4);
                 }
                 today.get(i).draw(g2);
             }
+
+            // if full time is selected and the last punch isn't completed,
+            // display clock out time to have worked 8 hours
             if(fullTime.isChecked() && (today.size() - 1) % 2 == 0) {
                 double additionalTime = 8.0 - loggedTime();
                 g2.setColor(Color.RED);
@@ -99,7 +109,10 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                     g2.setColor(Color.GREEN);
                 String anticipatedTime = getTime(additionalTime);
                 g2.drawString(anticipatedTime, back.getWidth(), (today.size() + 3) * g2.getFont().getSize());
-            } else if(date.equals(getDate()) && loggedTime(previousWeek()) > 0 && (today.size() - 1) % 2 == 0) {
+            }
+            // if full time isn't checked, display the clock out time that
+            // matches the total work time on the same day in the previous week
+            else if(date.equals(getDate()) && loggedTime(previousWeek()) > 0 && (today.size() - 1) % 2 == 0) {
                 double additionalTime = loggedTime(previousWeek()) - loggedTime();
                 g2.setColor(Color.RED);
                 if (additionalTime < 0)
@@ -108,6 +121,8 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
                 g2.drawString(anticipatedTime, back.getWidth(), (today.size() + 3) * g2.getFont().getSize());
             }
 
+            // if week hours is selected, display the hours worked and the total hours
+            // worked in the week
             if(weekHours.isChecked()) {
                 g2.setColor(Color.WHITE);
                 g2.setFont(new Font(null, Font.BOLD, getHeight() / 20));
@@ -122,25 +137,22 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
             }
         }
 
-        back.draw(g2);
         if(KeyboardUtility.isPressed(KeyEvent.VK_CONTROL)) {
             left.setLabel("<<");
-        } else {
-            left.setLabel("<");
-        }
-        left.draw(g2);
-
-        if(KeyboardUtility.isPressed(KeyEvent.VK_CONTROL)) {
             right.setLabel(">>");
         } else {
+            left.setLabel("<");
             right.setLabel(">");
         }
-        right.draw(g2);
+
+        back.draw(g2);
+        left.draw(g2);
         right.draw(g2);
         verbose.draw(g2);
         fullTime.draw(g2);
         weekHours.draw(g2);
 
+        // when the log updates, show the timestamp
         if(updating) {
             g2.setColor(new Color(255, 255, 255, (int) (255 * (1 - (double) updateTicks / (double) (FRAMERATE * UPDATE_TIME)))));
             g2.setFont(new Font(null, Font.PLAIN, getHeight() / 20));
@@ -152,15 +164,21 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         g.drawImage(buffer, 0, 0, null);
     }
 
+    // pull month, day, and year out of a Calendar instance and put into a nice date format
     public String getDate() {
         Calendar calendar = Calendar.getInstance();
         return String.format("%02d/%02d/%02d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DATE), calendar.get(Calendar.YEAR));
     }
 
+    // return the String for an entry in the log at the date
+    // 'direction' days in the future or past
     public String getDate(int direction) {
         return getDate(date, direction);
     }
 
+    // return the String for an entry in the log at the date
+    // one forward or backwards (indicated by 'direction') from
+    // the currentDate
     public String getDate(String currentDate, int direction) {
         Comparator<String> dateComparator = Comparator.comparing((String k) -> k.split("/")[2]) //sort by year
                 .thenComparing((String k) -> k.split("/")[0]) //sort by month
@@ -177,6 +195,8 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         }
     }
 
+    // pull the minute and hour (in 24 hour format) from a
+    // Calendar instance and put in a nice time format
     public String getTime(double additionalHours) {
         int hours = (int) (Math.floor(additionalHours));
         int minutes = (int) (additionalHours * 60 - hours * 60);
@@ -212,6 +232,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         repaint();
     }
 
+    // return the date exactly one week before the current date
     public String previousWeek() {
         Calendar calendar = Calendar.getInstance();
         calendar.setWeekDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.WEEK_OF_YEAR) - 1 % 52, calendar.get(Calendar.DAY_OF_WEEK));
@@ -235,30 +256,44 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         return hours;
     }
 
+    // returns an ArrayList<String> of the strings for entries in
+    // log for all punches in the previous week
     public ArrayList<String> weekDates(String date) {
         ArrayList<String> dates = new ArrayList<>();
         String currentDate = date;
         dates.add(currentDate);
+
+        // move backwards from the current date until the week changes
         int weekOfYear = weekOfYear(currentDate);
         while(weekOfYear(currentDate) == weekOfYear) {
             String previousDate = getDate(currentDate, -1);
+            // if the next date isn't the same date, and the week hasn't changed
+            // set the current date to the next date
             if(!currentDate.equals(previousDate) && weekOfYear(previousDate) == weekOfYear) {
                 currentDate = getDate(currentDate, -1);
             } else {
                 break;
             }
+
+            // add the date to the ArrayList
             if(!dates.contains(currentDate)) {
                 dates.add(currentDate);
             }
         }
+
+        // move forwards from the current date until the week changes
         currentDate = date;
         while(weekOfYear(currentDate) == weekOfYear) {
             String nextDate = getDate(currentDate, 1);
+            // if the next date isn't the same date, and the week hasn't changed
+            // set the current date to the next date
             if(!currentDate.equals(nextDate) && weekOfYear(nextDate) == weekOfYear) {
                 currentDate = getDate(currentDate, 1);
             } else {
                 break;
             }
+
+            // add the date to the ArrayList
             if(!dates.contains(currentDate)) {
                 dates.add(currentDate);
             }
@@ -266,6 +301,7 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         return dates;
     }
 
+    // compute the total time logged for a particular date
     public double loggedTime(String date) {
         double hours = 0;
         if(log.containsKey(date)) {
@@ -290,6 +326,8 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         return hourDiff + (minuteDiff / 60.0);
     }
 
+    // add a punch to the HashTable for the current date
+    // and write the updated HashTable to the log file
     public void log() {
         date = getDate();
         if(!log.containsKey(date)) {
@@ -305,6 +343,8 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
     public void writeLog() {
         try {
             PrintStream out = new PrintStream(new File("history.log"));
+            // for every date in the log sorted from December to January (12 -> 1),
+            // output the punches to the log
             for(String date : log.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList())) {
                 out.print(date + ",");
                 ArrayList<Punch> today = log.get(date);
@@ -329,6 +369,9 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         for (Punch p : today.subList(indexOfP, today.size())) {
             p.setY(p.getY() - p.getHeight());
         }
+
+        // if there are no entries left under today's date,
+        // remove the log entry for today's date
         if(today.isEmpty()) {
             log.remove(date);
             date = getDate();

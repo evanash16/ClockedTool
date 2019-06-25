@@ -13,6 +13,8 @@ public class Scheduler extends JPanel {
     }
 
     public void schedule(long delay) {events.add(delay);}
+
+    // decrement all events, alarm if any of the events hit 0
     public void decrement(long value) {
         for(int i = 0; i < events.size(); i++) {
             Long eventTime = events.get(i);
@@ -24,9 +26,11 @@ public class Scheduler extends JPanel {
             }
         }
     }
+
     public boolean isAlarming() {return this.alarming;}
 
     public boolean isEmpty() {return events.isEmpty();}
+
     public void clearEvents() {
         events = new ArrayList<>();
         alarming = false;

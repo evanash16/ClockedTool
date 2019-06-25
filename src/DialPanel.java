@@ -108,6 +108,7 @@ public class DialPanel extends JPanel {
     public boolean isDown() {
         return !isFreeSpinning() && angle % (2 * Math.PI) >= Math.PI;
     }
+
     public boolean isFreeSpinning() {
         return freeSpin.isChecked();
     }

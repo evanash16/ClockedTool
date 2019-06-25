@@ -56,6 +56,7 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
 
         scheduler = new Scheduler();
 
+        // call update every second
         updateTimer = new Timer(1000, e -> update());
 
         setVisible(true);
@@ -76,16 +77,20 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
     public void mouseReleased(MouseEvent e) {
         if (dial.isVisible()) {
             dial.click(e);
+            // if the dial was successfully clicked
             if (dial.clicked(e)) {
+                // log the current time
                 history.log();
                 history.update();
+                // if the dial is out, schedule an interruption in 10 seconds
                 if (!dial.isDown()) {
                     if(!updateTimer.isRunning())
                         updateTimer.start();
                     scheduler.schedule(10);
                 } else {
-                    if(updateTimer.isRunning())
+                    if(updateTimer.isRunning()) {
                         updateTimer.stop();
+                    }
                     scheduler.clearEvents();
                     setLocation(tk.getScreenSize().width - getWidth(), tk.getScreenSize().height - getHeight());
                 }
