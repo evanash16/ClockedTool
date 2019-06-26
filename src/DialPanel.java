@@ -16,7 +16,7 @@ public class DialPanel extends JPanel {
     private double angle = Math.PI, delAngle = 0.1, destination = Math.PI;
     private int radius;
     private String upString = "IN", downString = "OUT", text = "clocked...";
-    private CornerButton viewHistory, minimize;
+    private CornerButton viewHistory, viewSettings, minimize;
     private Checkbox freeSpin;
 
     private Timer updateTimer;
@@ -25,7 +25,8 @@ public class DialPanel extends JPanel {
         setSize(parent.getSize());
 
         radius = Math.min(getWidth(), getHeight()) / 2;
-        viewHistory = new CornerButton(radius / 16, radius / 16, radius / 4, radius / 4, CornerButton.NORTH_WEST, "...", "history", ul);
+        viewHistory = new CornerButton(radius / 16, radius / 16, radius / 4, radius / 4, CornerButton.NORTH_WEST, "H", "history", ul);
+        viewSettings = new CornerButton(getWidth() - radius / 16, radius / 16, radius / 4, radius / 4, CornerButton.NORTH_EAST, "S", "settings", ul);
         minimize = new CornerButton(getWidth() - radius / 16, getHeight() - radius / 16, radius / 4, radius / 4, CornerButton.SOUTH_EAST, "", "minimize", ul);
         freeSpin = new Checkbox(radius / 2 - radius / 5,  getHeight() - radius / 10 - radius / 32, radius / 10, radius / 10, "Spin!", ul);
 
@@ -40,6 +41,7 @@ public class DialPanel extends JPanel {
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         viewHistory.draw(g2);
+        viewSettings.draw(g2);
         minimize.draw(g2);
         freeSpin.draw(g2);
 
@@ -54,12 +56,12 @@ public class DialPanel extends JPanel {
         int strokeWeight = 10;
         g2D.setStroke(new BasicStroke(strokeWeight));
 
-        g2.setColor(Color.GREEN);
+        g2.setColor(SettingsPanel.IN_COLOR);
         g2.fillArc(-radius, -radius, 2 * radius, 2 * radius, 0, 180);
         g2.setColor(g2.getColor().darker());
         g2.drawArc(-radius, -radius, (2 * radius), (2 * radius), 0, 180);
 
-        g2.setColor(Color.RED);
+        g2.setColor(SettingsPanel.OUT_COLOR);
         g2.fillArc(-radius, -radius, 2 * radius, 2 * radius, 180, 180);
         g2.setColor(g2.getColor().darker());
         g2.drawArc(-radius, -radius, (2 * radius), (2 * radius), 180, 180);
@@ -116,6 +118,7 @@ public class DialPanel extends JPanel {
     public void click(MouseEvent e) {
         minimize.click(e.getPoint());
         viewHistory.click(e.getPoint());
+        viewSettings.click(e.getPoint());
         freeSpin.click(e.getPoint());
     }
 

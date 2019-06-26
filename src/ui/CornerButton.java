@@ -59,7 +59,22 @@ public class CornerButton extends UIComponent {
 
         g.setFont(new Font(null, Font.BOLD, getHeight() / 2));
         int stringWidth = g.getFontMetrics().stringWidth(getLabel());
-        g.drawString(getLabel(), getX() + (getWidth() - stringWidth) / 4, getY() + getHeight() / 2 - 5);
+        switch (orientation) {
+            case NORTH_EAST:
+                g.drawString(getLabel(), getX() - stringWidth - getWidth() / 8, getY() + getHeight() / 2);
+                break;
+            case SOUTH_EAST:
+                g.drawString(getLabel(), getX() - stringWidth - getWidth() / 8, getY() - getHeight() / 2 + g.getFont().getSize() / 2);
+                break;
+            case NORTH_WEST:
+                g.drawString(getLabel(), getX() + getWidth() / 8, getY() + getHeight() / 2);
+                break;
+            case SOUTH_WEST:
+                g.drawString(getLabel(), getX() + getWidth() / 8, getY() - getHeight() / 2 + g.getFont().getSize() / 2);
+                break;
+            default:
+                break;
+        }
     }
 
     @Override

@@ -20,6 +20,7 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
     private DialPanel dial;
     private Scheduler scheduler;
     private HistoryPanel history;
+    private SettingsPanel settings;
 
     public static void main(String[] args) {
         new ClockedTool();
@@ -53,6 +54,10 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
         history = new HistoryPanel(this, this);
         history.setVisible(false);
         this.add(history);
+
+        settings = new SettingsPanel(this, this);
+        settings.setVisible(false);
+        this.add(settings);
 
         scheduler = new Scheduler();
 
@@ -95,8 +100,10 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
                     setLocation(tk.getScreenSize().width - getWidth(), tk.getScreenSize().height - getHeight());
                 }
             }
-        } else if(history.isVisible()) {
+        } else if (history.isVisible()) {
             history.click(e);
+        } else if (settings.isVisible()) {
+            settings.click(e);
         }
     }
 
@@ -118,14 +125,19 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
 
     @Override
     public void onUIComponentEvent(UIComponent ui) {
-        if(ui.getId().equals("back")) {
+        System.out.println("Yep");
+        if (ui.getId().equals("back")) {
             history.setVisible(false);
+            settings.setVisible(false);
             dial.setVisible(true);
-        } else if(ui.getId().equals("history")) {
+        } else if (ui.getId().equals("history")) {
             history.setVisible(true);
             dial.setVisible(false);
             history.update();
-        }  else if(ui.getId().equals("minimize")) {
+        } else if (ui.getId().equals("settings")) {
+            settings.setVisible(true);
+            dial.setVisible(false);
+        }  else if (ui.getId().equals("minimize")) {
             if(scheduler.isAlarming()) {
                 setLocation((tk.getScreenSize().width - getWidth()) / 2, (tk.getScreenSize().height - getHeight()) / 2);
             } else {
