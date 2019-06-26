@@ -104,3 +104,15 @@
 <ul>
 <li>Quicker history navigation - By pressing the Control key, you can navigate through your punches twice as fast</li>
 </ul>
+
+<h3>1.0.8</h3>
+<ul>
+<li>The history corner button is now labeled with an 'H' and the new settings panel
+is labelled with an 'S'
+<li>Palette Editor - You can now change the colors of the in and out hemicircles 
+  <ul>
+  <li>Using the 'color picker' on the new settings panel, you can set the colors behind "IN" and "OUT" with just a couple clicks</li>
+  <li><b>NOTE:</b> The colors selected are not persisted when the application is closed.</li>
+  </ul>
+</li>
+</ul>
