@@ -108,11 +108,24 @@
 <h3>1.0.8</h3>
 <ul>
 <li>The history corner button is now labeled with an 'H' and the new settings panel
-is labelled with an 'S'
+is labeled with an 'S'</li>
 <li>Palette Editor - You can now change the colors of the in and out hemicircles 
   <ul>
   <li>Using the 'color picker' on the new settings panel, you can set the colors behind "IN" and "OUT" with just a couple clicks</li>
   <li><b>NOTE:</b> The colors selected are not persisted when the application is closed.</li>
   </ul>
 </li>
+<li>The 'Verbose' diff between timestamps has been simplified to enable the addition of more checkboxes</li>
+</ul>
+
+<h3>1.0.9</h3>
+<ul>
+<li>The color selection is now persisted to a ClockedTool.config file
+  <ul>
+  <li>Clicking "Set IN", "Set OUT", or "Reset" on the settings panel writes to this file</li>
+  <li><b>NOTE:</b>This file is created on startup if it doesn't already exist</li>
+  </ul>
+</li>
+<li>The 'X' on the settings panel has been increased marginally</li>
+<li>The color wheel is now saved as a high-res image, improving performance</li>
 </ul>

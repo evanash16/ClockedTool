@@ -125,7 +125,6 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
 
     @Override
     public void onUIComponentEvent(UIComponent ui) {
-        System.out.println("Yep");
         if (ui.getId().equals("back")) {
             history.setVisible(false);
             settings.setVisible(false);

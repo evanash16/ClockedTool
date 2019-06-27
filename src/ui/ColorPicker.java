@@ -1,11 +1,15 @@
 package ui;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class ColorPicker extends UIComponent {
 
     private int radius, selX, selY;
+    private static Image COLOR_WHEEL_IMAGE;
     private BufferedImage colorWheel;
 
     public ColorPicker(int x, int y, int width, int height, UIComponentListener ul) {
@@ -13,17 +17,33 @@ public class ColorPicker extends UIComponent {
         this.radius = Math.min(getWidth(), getHeight()) / 2;
         this.selX = radius;
         this.selY = radius;
-        colorWheel = new BufferedImage(2 * radius, 2 * radius, BufferedImage.TYPE_INT_ARGB);
-        generateColorWheel();
+        try {
+            if (COLOR_WHEEL_IMAGE == null) {
+                COLOR_WHEEL_IMAGE = ImageIO.read(getClass().getResource("/images/ColorWheel.png"));
+            }
+            colorWheel = new BufferedImage(radius * 2, radius * 2, BufferedImage.TYPE_INT_ARGB);
+            Graphics g2 = colorWheel.getGraphics();
+            g2.drawImage(COLOR_WHEEL_IMAGE.getScaledInstance(radius * 2, radius * 2, BufferedImage.SCALE_SMOOTH),
+                    0, 0, null);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
-    private void generateColorWheel() {
+    private void generateColorWheel(int radius) {
         Graphics g2 = colorWheel.getGraphics();
         for (double hue = 0; hue < 360; hue += 0.01) { //for every angle
-            for (double sat = 0; sat < 1; sat += 0.01) { //for every saturation value
+            for (double sat = 0; sat < 1; sat += 0.001) { //for every saturation value
                 g2.setColor(convertHSVToRGB(hue, sat, 0.5));
                 g2.drawOval((int) (radius + (radius * sat * Math.cos(Math.toRadians(hue))) - 1),  (int) (radius - (radius * sat * Math.sin(Math.toRadians(hue))) - 1), 2, 2);
             }
+        }
+        try {
+            File colorWheelFile = new File("ColorWheel.png");
+            colorWheelFile.createNewFile();
+            ImageIO.write((BufferedImage) colorWheel, "png", colorWheelFile);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 
