@@ -129,3 +129,8 @@ is labeled with an 'S'</li>
 <li>The 'X' on the settings panel has been increased marginally</li>
 <li>The color wheel is now saved as a high-res image, improving performance</li>
 </ul>
+
+<h3>1.1</h3>
+<ul>
+<li>The checkboxes on the HistoryPanel are persisted to and loaded from the ClockedTool.config as well</li>
+</ul>
