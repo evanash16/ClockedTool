@@ -1,6 +1,4 @@
-import input.FileUtility;
 import input.KeyboardUtility;
-import input.SettingsUtility;
 import ui.Button;
 import ui.Checkbox;
 import ui.*;
@@ -12,7 +10,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,10 +39,6 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         fullTime = new Checkbox(getWidth() - getWidth() / 50 - getWidth() / 20, verbose.getY() + verbose.getHeight() + getHeight() / 50, getWidth() / 20, getHeight() / 20, "Full Time", this);
         weekHours = new Checkbox(getWidth() - getWidth() / 50 - getWidth() / 20, fullTime.getY() + fullTime.getHeight() + getHeight() / 50, getWidth() / 20, getHeight() / 20, "Week Hours", this);
 
-        verbose.setDefault(Boolean.parseBoolean(SettingsUtility.getSetting(verbose.getLabel())));
-        fullTime.setDefault(Boolean.parseBoolean(SettingsUtility.getSetting(fullTime.getLabel())));
-        weekHours.setDefault(Boolean.parseBoolean(SettingsUtility.getSetting(weekHours.getLabel())));
-
         left = new Button(buttonWidth, getHeight() - buttonWidth, ((getWidth() + buttonWidth) / 2) - buttonWidth, buttonWidth, "<", this);
         right = new Button((getWidth() + buttonWidth) / 2, getHeight() - buttonWidth, (getWidth() + buttonWidth) / 2 - buttonWidth, buttonWidth, ">", this);
         back = new Button(0, 0, buttonWidth, getHeight(), "Back", "back", Button.BOTTOM_TO_TOP, ul);
@@ -52,7 +48,8 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
 
         try{
             // open history.log, create if it doesn't exist
-            File historyLog = FileUtility.openOrCreateFile("history.log");
+            File historyLog = new File("history.log");
+            historyLog.createNewFile();
 
             Scanner scanner = new Scanner(historyLog);
             // parse punches out of history.log, add to timestamps ArrayList
@@ -345,21 +342,22 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
 
     public void writeLog() {
         try {
+            PrintStream out = new PrintStream(new File("history.log"));
             // for every date in the log sorted from December to January (12 -> 1),
             // output the punches to the log
             for(String date : log.keySet().stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList())) {
-                FileUtility.writeToFile("history.log", date + ",");
+                out.print(date + ",");
                 ArrayList<Punch> today = log.get(date);
                 for(int i = 0; i < today.size(); i++) {
-                    FileUtility.writeToFile("history.log", today.get(i).getPunchTime());
+                    out.print(today.get(i).getPunchTime());
                     if(i < today.size() - 1) {
-                        FileUtility.writeToFile("history.log", ",");
+                        out.print(",");
                     } else{
-                        FileUtility.writeToFile("history.log", "\n");
+                        out.println();
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -408,13 +406,6 @@ public class HistoryPanel extends JPanel implements UIComponentListener {
         } else if(ui.equals(right)) {
             viewingHistory = true;
             date = getDate(KeyboardUtility.isPressed(KeyEvent.VK_CONTROL) ? 2 : 1);
-        } else if (ui instanceof Checkbox){
-            SettingsUtility.setSetting(ui.getLabel(), Boolean.toString(((Checkbox) ui).isChecked()));
-            try {
-                SettingsUtility.writeSettingsToFile();
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
         }
     }
 }

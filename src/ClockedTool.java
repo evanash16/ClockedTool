@@ -1,6 +1,4 @@
-import input.FileUtility;
 import input.KeyboardUtility;
-import input.SettingsUtility;
 import ui.UIComponent;
 import ui.UIComponentListener;
 
@@ -45,8 +43,6 @@ public class ClockedTool extends JFrame implements KeyListener, MouseListener, U
         addMouseListener(this);
         try {
             setIconImage(ImageIO.read(getClass().getResource("/images/ClockedToolIconV2.png")));
-            FileUtility.openOrCreateFile("ClockedTool.config");
-            SettingsUtility.loadSettingsFromFile("ClockedTool.config");
         } catch(IOException e) {
             System.out.println(e.getMessage());
         }

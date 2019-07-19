@@ -45,7 +45,4 @@ public class Checkbox extends UIComponent {
     public boolean isChecked() {
         return checked;
     }
-    public void setDefault(boolean checked) {
-        this.checked = checked;
-    }
 }

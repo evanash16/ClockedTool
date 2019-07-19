@@ -1,4 +1,3 @@
-import input.SettingsUtility;
 import ui.ColorPicker;
 import ui.CornerButton;
 import ui.Button;
@@ -10,6 +9,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.Scanner;
 
 public class SettingsPanel extends JPanel implements UIComponentListener {
 
@@ -24,8 +24,13 @@ public class SettingsPanel extends JPanel implements UIComponentListener {
         picker = new ColorPicker(getWidth() / 2 - 5 * getWidth() / 16, getHeight() / 16, 5 * getWidth() / 8, 5 * getHeight() / 8, this);
 
         try {
-            readColors();
-            writeColors();
+            File colorConfig = new File("ClockedTool.config");
+            // color config doesn't exist yet, creating a new file
+            if(colorConfig.createNewFile()) {
+                writeColors();
+            } else {
+                readColors();
+            }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -36,23 +41,28 @@ public class SettingsPanel extends JPanel implements UIComponentListener {
         reset = new Button(getWidth() / 2 - getWidth() / 8, setOut.getY() + setOut.getHeight() + getHeight() / 64, getWidth() / 4, getHeight() / 16, "Reset", this);
     }
 
-    private void writeColors() throws IOException {
-        SettingsUtility.setSetting("IN", String.format("(%d,%d,%d)", IN_COLOR.getRed(), IN_COLOR.getGreen(), IN_COLOR.getBlue()));
-        SettingsUtility.setSetting("OUT", String.format("(%d,%d,%d)", OUT_COLOR.getRed(), OUT_COLOR.getGreen(), OUT_COLOR.getBlue()));
-        SettingsUtility.writeSettingsToFile();
+    private void writeColors() throws FileNotFoundException {
+        File colorConfig = new File("ClockedTool.config");
+        PrintStream outputStream = new PrintStream(colorConfig);
+        outputStream.println(String.format("IN:(%d,%d,%d)", IN_COLOR.getRed(), IN_COLOR.getGreen(), IN_COLOR.getBlue()));
+        outputStream.println(String.format("OUT:(%d,%d,%d)", OUT_COLOR.getRed(), OUT_COLOR.getGreen(), OUT_COLOR.getBlue()));
     }
 
-    private void readColors() {
-        String inSetting = SettingsUtility.getSetting("IN");
-        String outSetting = SettingsUtility.getSetting("OUT");
-        if (inSetting != null) {
-            String rgb = inSetting.substring(1, inSetting.length() - 1);
-            String[] parsedRGB = rgb.split(",");
-            IN_COLOR = new Color(Integer.parseInt(parsedRGB[0]), Integer.parseInt(parsedRGB[1]), Integer.parseInt(parsedRGB[2]));
-        } else if (outSetting.equals("OUT")) {
-            String rgb = outSetting.substring(1, outSetting.length() - 1);
-            String[] parsedRGB = rgb.split(",");
-            OUT_COLOR = new Color(Integer.parseInt(parsedRGB[0]), Integer.parseInt(parsedRGB[1]), Integer.parseInt(parsedRGB[2]));
+    private void readColors() throws FileNotFoundException {
+        File colorConfig = new File("ClockedTool.config");
+        Scanner scanner = new Scanner(colorConfig);
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine().replaceAll("\\s","");
+            String[] parsedLine = line.split(":");
+            if (parsedLine[0].equals("IN")) {
+                String rgb = parsedLine[1].substring(1, parsedLine[1].length() - 1);
+                String[] parsedRGB = rgb.split(",");
+                IN_COLOR = new Color(Integer.parseInt(parsedRGB[0]), Integer.parseInt(parsedRGB[1]), Integer.parseInt(parsedRGB[2]));
+            } else if (parsedLine[0].equals("OUT")) {
+                String rgb = parsedLine[1].substring(1, parsedLine[1].length() - 1);
+                String[] parsedRGB = rgb.split(",");
+                OUT_COLOR = new Color(Integer.parseInt(parsedRGB[0]), Integer.parseInt(parsedRGB[1]), Integer.parseInt(parsedRGB[2]));
+            }
         }
     }
 

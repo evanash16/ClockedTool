@@ -1,9 +1,12 @@
 import ui.CornerButton;
 import ui.Checkbox;
+import ui.UIComponent;
 import ui.UIComponentListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
